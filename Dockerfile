@@ -35,7 +35,7 @@ RUN rm /etc/localtime && \
     localedef --quiet -c -i en_US -f UTF-8 en_US.UTF-8
 
 ## Airflow install
-ENV AIRFLOW_VERSION 1.9.0alpha0
+ENV AIRFLOW_VERSION 1.9.0.dev0+apache.incubating
 ENV AIRFLOW_HOME /opt/airflow
 
 RUN useradd --shell /bin/bash --create-home --home $AIRFLOW_HOME airflow \
