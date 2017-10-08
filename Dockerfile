@@ -71,6 +71,6 @@ RUN FERNET_KEY=$(python -c "from cryptography.fernet import Fernet; FERNET_KEY =
 
 EXPOSE 8080 5555 8793
 
-USER root
+USER airflow
 WORKDIR ${AIRFLOW_HOME}
 ENTRYPOINT ["./entrypoint.sh"]
