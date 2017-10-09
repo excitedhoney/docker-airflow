@@ -35,21 +35,26 @@ RUN rm /etc/localtime && \
     localedef --quiet -c -i en_US -f UTF-8 en_US.UTF-8
 
 ## Airflow install
-ENV AIRFLOW_VERSION 1.9.0.dev0+apache.incubating
-ENV AIRFLOW_HOME /opt/airflow
+ENV AIRFLOW_VERSION 1.9.0alpha0
+ENV AIRFLOW_HOME /usr/local/airflow
 
 RUN useradd --shell /bin/bash --create-home --home $AIRFLOW_HOME airflow \
     && mkdir $AIRFLOW_HOME/logs \
     && mkdir $AIRFLOW_HOME/dags \
     && chown -R airflow: $AIRFLOW_HOME \
-    && pip install pytz==2015.7 cryptography pyOpenSSL ndg-httpsclient pyasn1 celery==3.1.17 \
+    && pip install pytz==2015.7 cryptography pyOpenSSL ndg-httpsclient pyasn1 celery \
     && pip install --upgrade backports.ssl-match-hostname \
     && pip install configparser
 
 RUN mkdir /tmp/incubator-airflow \
+    && git clone https://github.com/apache/incubator-airflow.git /tmp/incubator-airflow \
     && cd /tmp/incubator-airflow \
-    && git clone https://github.com/wasperen/incubator-airflow.git /tmp/incubator-airflow \
-    && pip install . .[celery] .[rabbitmq] .[mysql] .[async] .[password] .[devel_hadoop] .[crypto] .[hdfs] .[hive] .[kerberos] .[jdbc] .[docker] .[s3] .[slack] \
+    && git checkout 1.9.0alpha0 \
+    && pip install setuptools --upgrade \
+    && cd /tmp/incubator-airflow \
+    && pip install --no-cache-dir . .[celery] .[rabbitmq] .[mysql] .[async] .[password] .[devel_hadoop] .[crypto] .[hdfs] .[hive] .[kerberos] .[jdbc] .[docker] \
+    && pip install psycopg2 \ 
+    && pip install --no-cache-dir .[postgres] .[s3] .[slack] \
     && rm -rf /tmp/incubator-airflow
 
 # Entrypoint

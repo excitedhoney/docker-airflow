@@ -1,14 +1,15 @@
-#!/bin/bash
-/bin/run-parts entrypoint.d
+#!/usr/bin/env bash
 
+CMD="airflow"
 TRY_LOOP="10"
-MYSQL_HOST="mysql"
-MYSQL_PORT="3306"
+POSTGRES_HOST="postgresql"
+POSTGRES_PORT="5432"
 RABBITMQ_HOST="rabbitmq"
 RABBITMQ_CREDS="airflow:airflow"
 
+
 # wait for rabbitmq
-if [ "$@" = "webserver" ] || [ "$@" = "worker" ] || [ "$@" = "scheduler" ] || [ "$@" = "flower" ] ; then
+if [ "$1" = "webserver" ] || [ "$1" = "worker" ] || [ "$1" = "scheduler" ] || [ "$1" = "flower" ] ; then
   j=0
   while ! curl -sI -u $RABBITMQ_CREDS http://$RABBITMQ_HOST:15672/api/whoami |grep '200 OK'; do
     j=`expr $j + 1`
@@ -22,22 +23,22 @@ if [ "$@" = "webserver" ] || [ "$@" = "worker" ] || [ "$@" = "scheduler" ] || [ 
 fi
 
 # wait for DB
-if [ "$@" = "webserver" ] || [ "$@" = "worker" ] || [ "$@" = "scheduler" ] ; then
+if [ "$1" = "webserver" ] || [ "$1" = "worker" ] || [ "$1" = "scheduler" ] ; then
   i=0
-  while ! nc $MYSQL_HOST $MYSQL_PORT >/dev/null 2>&1 < /dev/null; do
+  while ! nc $POSTGRES_HOST $POSTGRES_PORT >/dev/null 2>&1 < /dev/null; do
     i=`expr $i + 1`
     if [ $i -ge $TRY_LOOP ]; then
-      echo "$(date) - ${MYSQL_HOST}:${MYSQL_PORT} still not reachable, giving up"
+      echo "$(date) - ${POSTGRES_HOST}:${POSTGRES_PORT} still not reachable, giving up"
       exit 1
     fi
-    echo "$(date) - waiting for ${MYSQL_HOST}:${MYSQL_PORT}... $i/$TRY_LOOP"
+    echo "$(date) - waiting for ${POSTGRES_HOST}:${POSTGRES_PORT}... $i/$TRY_LOOP"
     sleep 5
   done
-  if [ "$@" = "webserver" ]; then
+  if [ "$1" = "webserver" ]; then
     echo "Initialize database..."
-    sudo -u airflow -E airflow initdb
+    $CMD initdb
   fi
   sleep 5
 fi
 
-exec sudo -u airflow -E airflow "$@"
+exec $CMD "$@"
